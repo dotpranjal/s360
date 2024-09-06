@@ -31,10 +31,10 @@ class MyApp extends StatelessWidget {
 
       initialRoute: '/',
       routes: {
-        '/settings': (context)=> SettingsPage(),
+        '/settings': (context)=> const SettingsPage(),
       },
 
-      home: HomeScreen(),
+      home: const HomeScreen(),
     );
   }
 }
@@ -238,7 +238,7 @@ class NewsPage extends StatelessWidget {
 
   Future<List<Map<String, dynamic>>> fetchNews() async {
     const apiKey = 'aee608c5307e4bfb8fe356a983b7cfd4';
-    final url = 'https://newsapi.org/v2/everything?q=women%20safety&from=2024-09-05&to=2024-09-05&sortBy=popularity&apiKey=$apiKey';
+    const url = 'https://newsapi.org/v2/everything?q=women%20safety&from=2024-09-05&to=2024-09-05&sortBy=popularity&apiKey=$apiKey';
 
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
