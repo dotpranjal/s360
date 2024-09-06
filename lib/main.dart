@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 // import 'package:flutter_map/flutter_map.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
+import 'package:http/http.dart' as http;
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -127,13 +128,22 @@ class HomePage extends StatelessWidget{
                   margin: const EdgeInsets.fromLTRB(0, 50, 0, 0),
                   decoration: BoxDecoration(color: Colors.grey.shade900, borderRadius: BorderRadius.circular(10.0)),
                   width: MediaQuery.of(context).size.width/2.2,
-                  height:170),
+                  height:170,
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Hey",style: TextStyle(fontSize: 26),),
+                      Text('User',style: TextStyle(fontSize: 26),),
+                    ],
+                  )
+                  ),
 
                 Container( 
                   margin: const EdgeInsets.fromLTRB(0, 50, 0, 0),
                   decoration: BoxDecoration(color: Colors.grey.shade900, borderRadius: BorderRadius.circular(10.0)),
                   width: MediaQuery.of(context).size.width/2.2,
-                  height:170),
+                  height:170,
+                  child: IconButton(onPressed: (){}, icon: const Icon(Icons.person, size: 150,))),
               ],
             ),
             Container(decoration: BoxDecoration(color: Colors.grey.shade900, borderRadius: BorderRadius.circular(10.0)),
@@ -156,7 +166,7 @@ class LocationPage extends StatelessWidget{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SOS'),
+        title: const Text('Location'),
       ),
       body: Center(
         child: ElevatedButton(
@@ -223,8 +233,22 @@ class SOSPage extends StatelessWidget{
   }
 }
 
-class NewsPage extends StatelessWidget{
+class NewsPage extends StatelessWidget {
   const NewsPage({super.key});
+
+  Future<List<Map<String, dynamic>>> fetchNews() async {
+    const apiKey = 'aee608c5307e4bfb8fe356a983b7cfd4';
+    final url = 'https://newsapi.org/v2/everything?q=women%20safety&from=2024-09-05&to=2024-09-05&sortBy=popularity&apiKey=$apiKey';
+
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final articles = data['articles'] as List<dynamic>;
+      return articles.map((article) => article as Map<String, dynamic>).toList();
+    } else {
+      throw Exception('Failed to load news');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -232,9 +256,29 @@ class NewsPage extends StatelessWidget{
       appBar: AppBar(
         title: const Text('News'),
       ),
-      // body: SingleChildScrollView(
-      //   child: Column(),
-      // )
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchNews(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No news available'));
+          } else {
+            return ListView.builder(
+              itemCount: snapshot.data?.length ?? 0,
+              itemBuilder: (context, index) {
+                final article = snapshot.data![index];
+                return ListTile(
+                  title: Text(article['title'] ?? 'No Title'),
+                  subtitle: Text(article['description'] ?? 'No Description'),
+                );
+              },
+            );
+          }
+        },
+      ),
     );
   }
 }
