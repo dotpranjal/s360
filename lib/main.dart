@@ -7,6 +7,148 @@ void main() {
   runApp(const MyApp());
 }
 
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData.light(),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primaryColor: Colors.black,
+        appBarTheme: const AppBarTheme(
+          color: Colors.black
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.black,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.grey,
+        )
+      ),
+      themeMode: ThemeMode.dark,
+
+      initialRoute: '/',
+      routes: {
+        '/settings': (context)=> SettingsPage(),
+      },
+
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  void _onPageChanged(int page){
+    setState(() {
+      _currentPage = page;
+    });
+  }
+
+  void _onNavItemTapped(int index){
+    _pageController.jumpToPage(index);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('S360'),
+        actions: [
+          IconButton(onPressed: (){Navigator.pushNamed(context, '/settings');}, icon: const Icon(Icons.settings,size: 30.0,))
+        ],
+      
+      ),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        children: const <Widget>[
+          HomePage(),
+          SOSPage(),
+          LocationPage(),
+          NewsPage()
+        ],
+      ),
+      
+      bottomNavigationBar: BottomNavigationBar(
+        
+        currentIndex: _currentPage,
+        onTap: _onNavItemTapped,
+        
+        items:const  [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, size: 30.0,),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sos, size: 30.0,),
+            label: 'Alarm',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.location_on, size: 30.0,),
+            label: 'Location',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.feed, size: 30.0,),
+            label: 'Feed',
+          ),
+        ],
+        ),
+      );
+  }
+}
+
+
+class HomePage extends StatelessWidget{
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Home'),
+      ),
+      body: SingleChildScrollView(
+        child:Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Container( 
+                  margin: const EdgeInsets.fromLTRB(0, 50, 0, 0),
+                  decoration: BoxDecoration(color: Colors.grey.shade900, borderRadius: BorderRadius.circular(10.0)),
+                  width: MediaQuery.of(context).size.width/2.2,
+                  height:170),
+
+                Container( 
+                  margin: const EdgeInsets.fromLTRB(0, 50, 0, 0),
+                  decoration: BoxDecoration(color: Colors.grey.shade900, borderRadius: BorderRadius.circular(10.0)),
+                  width: MediaQuery.of(context).size.width/2.2,
+                  height:170),
+              ],
+            ),
+            Container(decoration: BoxDecoration(color: Colors.grey.shade900, borderRadius: BorderRadius.circular(10.0)),
+                      height: MediaQuery.of(context).size.height-500,
+                      width: MediaQuery.of(context).size.width-40,
+                      margin: const EdgeInsets.fromLTRB(0, 200, 0, 0),
+                      ),
+            const Text('Made with love.',)
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class LocationPage extends StatelessWidget{
   const LocationPage({super.key});
 
@@ -96,92 +238,3 @@ class NewsPage extends StatelessWidget{
     );
   }
 }
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: [
-          IconButton(onPressed: (){Navigator.pushNamed(context, '/settings');}, icon: const Icon(Icons.settings,size: 30.0,))
-        ],
-      
-      ),
-      body: SingleChildScrollView(
-        child:Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Container( 
-                  margin: const EdgeInsets.fromLTRB(0, 50, 0, 0),
-                  decoration: BoxDecoration(color: Colors.grey.shade900, borderRadius: BorderRadius.circular(10.0)),
-                  width: MediaQuery.of(context).size.width/2.2,
-                  height:170),
-
-                Container( 
-                  margin: const EdgeInsets.fromLTRB(0, 50, 0, 0),
-                  decoration: BoxDecoration(color: Colors.grey.shade900, borderRadius: BorderRadius.circular(10.0)),
-                  width: MediaQuery.of(context).size.width/2.2,
-                  height:170),
-              ],
-            ),
-            Container(decoration: BoxDecoration(color: Colors.grey.shade900, borderRadius: BorderRadius.circular(10.0)),
-                      height: MediaQuery.of(context).size.height-500,
-                      width: MediaQuery.of(context).size.width-40,
-                      margin: const EdgeInsets.fromLTRB(0, 200, 0, 0),
-                      ),
-            const Text('Made with love.',)
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(color: Colors.grey.shade900,borderRadius: BorderRadius.circular(10)),
-        height: 80,
-        
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(onPressed: () {Navigator.pushNamed(context, '/home');}, icon: const Icon(Icons.home, size: 30.0)),
-            IconButton(onPressed: () {Navigator.pushNamed(context, '/sos');}, icon: const Icon(Icons.phone, size: 30.0)),
-            IconButton(onPressed: () {Navigator.pushNamed(context, '/location');}, icon: const Icon(Icons.location_on, size: 30.0)),
-            IconButton(onPressed: () {Navigator.pushNamed(context, '/news');}, icon: const Icon(Icons.feed, size: 30.0))
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: '/',
-      routes: {
-        '/': (context)=> const MyHomePage(title: 'S360'),
-        '/sos': (context)=> const SOSPage(),
-        '/location': (context)=> const LocationPage(),
-        '/settings': (context)=> const SettingsPage(),
-        '/news': (context)=> const NewsPage()
-
-      },
-      title: 'Flutter Demo',
-      theme: ThemeData.dark().copyWith(
-        primaryColor: Colors.pink,
-        scaffoldBackgroundColor: Colors.black,
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white, fontFamily: 'Sergei'),
-        )
-      ),
-    );
-  }
-}
-// FlutterNativeSplash.remove();
