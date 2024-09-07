@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_sms/flutter_sms.dart';
 import 'package:permission_handler/permission_handler.dart';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+
+
 
 // global_variables.dart
 const List<String> emergencyContacts = ['+917838159080','+919667536016','+919267966220'];
@@ -228,7 +230,6 @@ class SOSPage extends StatefulWidget {
 
 
 class _SOSPageState extends State<SOSPage>{
-  // final List<String> emergencyContacts = ['+917838159080','+919667536016','+919267966220'];
 
   void sendSOS() async {
     final smsPermissionStatus = await Permission.sms.request();

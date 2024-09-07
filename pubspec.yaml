@@ -33,6 +33,8 @@ environment:
 dependencies:
   # flutter_dotenv: ^5.0.2
   flutter_sms: 2.3.3
+  flutter_local_notifications: ^5.0.0+1
+
   http: ^1.2.2
   flutter:
     sdk: flutter
