@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 // import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_sms/flutter_sms.dart';
+import 'package:permission_handler/permission_handler.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+
+// global_variables.dart
+const List<String> emergencyContacts = ['+917838159080','+919667536016','+919267966220'];
 
 void main() {
   runApp(const MyApp());
@@ -74,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPageChanged: _onPageChanged,
         children: const <Widget>[
           HomePage(),
-          SOSPage(),
+          SOSPage(emergencyContacts: emergencyContacts),
           LocationPage(),
           NewsPage()
         ],
@@ -212,8 +217,41 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-class SOSPage extends StatelessWidget{
-  const SOSPage({super.key});
+class SOSPage extends StatefulWidget {
+  final List<String> emergencyContacts;
+
+  const SOSPage({Key? key, required this.emergencyContacts}) : super(key: key);
+
+  @override
+  _SOSPageState createState() => _SOSPageState();
+}
+
+
+class _SOSPageState extends State<SOSPage>{
+  // final List<String> emergencyContacts = ['+917838159080','+919667536016','+919267966220'];
+
+  void sendSOS() async {
+    final smsPermissionStatus = await Permission.sms.request();
+    if(smsPermissionStatus.isGranted){
+      try {
+        String _message = "I need help! My location is [Your location]";
+        await sendSMS(message: _message, recipients: emergencyContacts);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('SOS message sent successfully')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send SOS message: $e')),
+        );
+      }
+    }else{
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('SMS Permission Required')),
+      );
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +265,7 @@ class SOSPage extends StatelessWidget{
           foregroundColor: Colors.white,
           backgroundColor: Colors.red,
           shape: const CircleBorder(), minimumSize: const Size(200, 200)),
-          onPressed: (){}, child: const Text('SOS')),
+          onPressed: sendSOS, child: const Text('SOS')),
       ),
     );
   }
