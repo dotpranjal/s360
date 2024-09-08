@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_sms/flutter_sms.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geolocator/geolocator.dart';
 
 
 
@@ -166,8 +166,73 @@ class HomePage extends StatelessWidget{
   }
 }
 
-class LocationPage extends StatelessWidget{
-  const LocationPage({super.key});
+class LocationPage extends StatefulWidget {
+ const LocationPage({super.key});
+
+ @override
+ _LocationPageState createState() => _LocationPageState();
+}
+
+
+class _LocationPageState extends State<LocationPage>{
+  String _locationMessage = "Fetching location...";
+
+  @override
+  void initState() {
+   super.initState();
+   _getCurrentLocation();
+  }
+  
+  Future<void> _getCurrentLocation() async {
+     bool serviceEnabled;
+     LocationPermission permission;
+
+     // Test if location services are enabled
+     serviceEnabled = await Geolocator.isLocationServiceEnabled();
+     if (!serviceEnabled) {
+       // Location services are not enabled, show a message
+       setState(() {
+         _locationMessage = "Location services are disabled.";
+       });
+       return;
+     }
+
+     permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+         // Permissions are denied, show a message
+        setState(() {
+          _locationMessage = "Location permissions are denied.";
+        });
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are permanently denied, show a message
+      setState(() {
+        _locationMessage = "Location permissions are permanently denied.";
+      });
+      return;
+    }
+
+    // Get the current position
+    const  LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 100,
+    );
+
+
+    Position position = await Geolocator.getCurrentPosition(locationSettings: locationSettings);
+
+
+    setState(() {
+       _locationMessage = "Latitude: ${position.latitude}, Longitude: ${position.longitude}";
+     });
+   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -176,12 +241,7 @@ class LocationPage extends StatelessWidget{
         title: const Text('Location'),
       ),
       body: Center(
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.red,
-          backgroundColor: Colors.white,
-          shape: const CircleBorder(), minimumSize: const Size(200, 200)),
-          onPressed: (){}, child: const Text('SOS')),
+        child: Text(_locationMessage)
       ),
     );
   }
@@ -277,7 +337,7 @@ class NewsPage extends StatelessWidget {
 
   Future<List<Map<String, dynamic>>> fetchNews() async {
     const apiKey = 'aee608c5307e4bfb8fe356a983b7cfd4';
-    const url = 'https://newsapi.org/v2/everything?q=women%20safety&from=2024-09-05&to=2024-09-05&sortBy=popularity&apiKey=$apiKey';
+    const url = 'https://newsapi.org/v2/everything?q=women&from=2024-09-06&to=2024-09-06&sortBy=popularity&apiKey=$apiKey';
 
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
