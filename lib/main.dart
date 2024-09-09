@@ -4,6 +4,7 @@ import 'package:flutter_sms/flutter_sms.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 
@@ -175,6 +176,7 @@ class LocationPage extends StatefulWidget {
 
 
 class _LocationPageState extends State<LocationPage>{
+  
   String _locationMessage = "Fetching location...";
 
   @override
@@ -184,12 +186,15 @@ class _LocationPageState extends State<LocationPage>{
   }
   
   Future<void> _getCurrentLocation() async {
+    
      bool serviceEnabled;
      LocationPermission permission;
 
      // Test if location services are enabled
      serviceEnabled = await Geolocator.isLocationServiceEnabled();
      if (!serviceEnabled) {
+      // await Geolocator.openAppSettings();
+      await Geolocator.openLocationSettings();
        // Location services are not enabled, show a message
        setState(() {
          _locationMessage = "Location services are disabled.";
@@ -197,8 +202,9 @@ class _LocationPageState extends State<LocationPage>{
        return;
      }
 
-     permission = await Geolocator.checkPermission();
+    permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
+      
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
          // Permissions are denied, show a message
@@ -225,10 +231,11 @@ class _LocationPageState extends State<LocationPage>{
 
 
     Position position = await Geolocator.getCurrentPosition(locationSettings: locationSettings);
-
+    Position? position2 = await Geolocator.getLastKnownPosition();
+    
 
     setState(() {
-       _locationMessage = "Latitude: ${position.latitude}, Longitude: ${position.longitude}";
+       _locationMessage = "Latitude: ${position.latitude}, Longitude: ${position.longitude}, Last position: $position2";
      });
    }
 
@@ -241,14 +248,44 @@ class _LocationPageState extends State<LocationPage>{
         title: const Text('Location'),
       ),
       body: Center(
-        child: Text(_locationMessage)
+        child:Column(children: [Text(_locationMessage)
+        ],)
       ),
     );
   }
 }
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool _darkModeEnabled = false;
+  String _selectedLanguage = 'English';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(()
+ {
+      _darkModeEnabled = prefs.getBool('dark_mode') ?? false;
+      _selectedLanguage = prefs.getString('language') ?? 'English';
+    });
+  }
+
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('dark_mode', _darkModeEnabled);
+    await prefs.setString('language', _selectedLanguage);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -258,20 +295,38 @@ class SettingsPage extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          ListTile(
-            title: const Text('General'),
-            onTap: () {
-              // Navigate to the general settings page
-              // Navigator.pushNamed(context, '/general_settings');
+          SwitchListTile(
+            title: const Text('Dark Mode'),
+            value: _darkModeEnabled,
+            onChanged: (value) {
+              setState(() {
+                _darkModeEnabled = value;
+                _saveSettings();
+              });
             },
           ),
-          ListTile(
-            title: const Text('Notifications'),
-            onTap: () {
-              // Navigate to the notifications settings page
-              // Navigator.pushNamed(context, '/notifications_settings');
+          DropdownButtonFormField<String>(
+            value: _selectedLanguage,
+            onChanged: (value) {
+              setState(() {
+                _selectedLanguage = value!;
+                _saveSettings();
+              });
             },
+            items: <String>['English', 'Spanish', 'French'].map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+
+            decoration: const InputDecoration(
+              labelText: 'Language',
+              border: OutlineInputBorder(),
+
+            ),
           ),
+          ListTile(title: const Text("Notifications"),)
           // Add more settings options here
         ],
       ),
@@ -282,7 +337,7 @@ class SettingsPage extends StatelessWidget {
 class SOSPage extends StatefulWidget {
   final List<String> emergencyContacts;
 
-  const SOSPage({Key? key, required this.emergencyContacts}) : super(key: key);
+  const SOSPage({super.key, required this.emergencyContacts});
 
   @override
   _SOSPageState createState() => _SOSPageState();
@@ -295,8 +350,8 @@ class _SOSPageState extends State<SOSPage>{
     final smsPermissionStatus = await Permission.sms.request();
     if(smsPermissionStatus.isGranted){
       try {
-        String _message = "I need help! My location is [Your location]";
-        await sendSMS(message: _message, recipients: emergencyContacts);
+        String message = "I need help! My location is [Your location]";
+        await sendSMS(message: message, recipients: emergencyContacts);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('SOS message sent successfully')),
         );
@@ -337,7 +392,7 @@ class NewsPage extends StatelessWidget {
 
   Future<List<Map<String, dynamic>>> fetchNews() async {
     const apiKey = 'aee608c5307e4bfb8fe356a983b7cfd4';
-    const url = 'https://newsapi.org/v2/everything?q=women&from=2024-09-06&to=2024-09-06&sortBy=popularity&apiKey=$apiKey';
+    const url = 'https://newsapi.org/v2/everything?q=tech&from=2024-09-06&to=2024-09-06&sortBy=popularity&apiKey=$apiKey';
 
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
