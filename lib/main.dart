@@ -5,6 +5,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 
 
 
@@ -178,6 +182,7 @@ class LocationPage extends StatefulWidget {
 class _LocationPageState extends State<LocationPage>{
   
   String _locationMessage = "Fetching location...";
+  double lat=0.0,lon=0.0;
 
   @override
   void initState() {
@@ -231,11 +236,14 @@ class _LocationPageState extends State<LocationPage>{
 
 
     Position position = await Geolocator.getCurrentPosition(locationSettings: locationSettings);
-    Position? position2 = await Geolocator.getLastKnownPosition();
+    
+    
     
 
     setState(() {
-       _locationMessage = "Latitude: ${position.latitude}, Longitude: ${position.longitude}, Last position: $position2";
+       _locationMessage = "Latitude: ${position.latitude}, Longitude: ${position.longitude}";
+       lat = position.latitude;
+       lon = position.longitude;
      });
    }
 
@@ -248,7 +256,28 @@ class _LocationPageState extends State<LocationPage>{
         title: const Text('Location'),
       ),
       body: Center(
-        child:Column(children: [Text(_locationMessage)
+        child:Column(children: [Text(_locationMessage),
+        Column(children: [Container(height: 550,width: 350, child:FlutterMap(options: MapOptions(initialZoom: 9.2, initialCenter: LatLng(lat, lon)), 
+        children: [
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'com.example.app',
+            maxNativeZoom: 19, 
+            minNativeZoom: 0, 
+            // tileSize: 10.0,
+          ),
+          RichAttributionWidget( // Include a stylish prebuilt attribution widget that meets all requirments
+            attributions: [
+              TextSourceAttribution(
+                'OpenStreetMap contributors',
+                onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')), // (external)
+              ),
+          // Also add images...
+        ],
+          ),
+   
+
+        ],))],)
         ],)
       ),
     );
