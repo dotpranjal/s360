@@ -7,8 +7,8 @@ which ensures and curbs the dangers that a women or any person can face]
 
 **Features**
 
-* SOS button for women(Yet to be)
-* Live Location Tracking(Yet to be)
+* SOS button for women(Framework done but faulty)
+* Live Location Tracking(Some progress)
 * Daily news
 
 **Installation**
