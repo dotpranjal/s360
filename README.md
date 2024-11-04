@@ -1,7 +1,7 @@
 <<<<<<< HEAD
 # s360
 
-A new Flutter project.
+A new Flutter project for women safety.
 
 ## Getting Started
 
